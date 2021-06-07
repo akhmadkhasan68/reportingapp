@@ -142,7 +142,60 @@ class ReportsController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'name' => [
+                'required',
+            ],
+            'description' => [
+                'required',
+            ],
+            'province_id' => [
+                'required',
+            ],
+            'regency_id' => [
+                'required',
+            ],
+            'district_id' => [
+                'required',
+            ],
+            'village_id' => [
+                'required',
+            ],
+            'address' => [
+                'required',
+            ],
+        ]);
+
+        if($validator->fails())
+        {
+            $errors = $validator->errors();
+
+            return response()->json(['success' => false, 'message' => $errors]);
+        }
+
+        try{
+            $update = Report::findOrFail($id);
+            $update->name = $request->name;
+            $update->description = $request->description;
+            $update->province_id = $request->province_id;
+            $update->regency_id = $request->regency_id;
+            $update->district_id = $request->district_id;
+            $update->village_id = $request->village_id;
+            $update->address = $request->address;
+            $update->save();
+
+        }catch(Exception $ex)
+        {
+            return response()->json([
+                'success' => false,
+                'message' => $ex->getMessage()
+            ], 404);
+        }
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Success edit data'
+        ], 200);
     }
 
     /**
@@ -166,5 +219,23 @@ class ReportsController extends Controller
                 'message' => $ex->getMessage()
             ], 404);
         }
+    }
+
+    public function count_reports($status)
+    {
+        $reports = [
+            'all' => Report::all(),
+            'accept' => Report::where('status', '1')->get(),
+            'decline' => Report::where('status', '2')->get(),
+        ];
+
+        $data = [
+            'success' => true,
+            'data' => [
+                'total_data' => $reports[$status]->count()
+            ]
+        ];
+
+        return response()->json($data, 200);
     }
 }

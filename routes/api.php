@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\ReportsController;
+use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\ReportsController as ApiReports;
 use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
@@ -26,6 +27,16 @@ Route::group(['middleware' => 'auth:api'], function(){
         'create',
         'edit'
     ]);
+
+    Route::get('/total_report/{status}', [ApiReports::class, 'count_reports']);
+
+    Route::get('/provinces', [LocationController::class, 'get_provinces']);
+    Route::get('/regencies', [LocationController::class, 'get_regencies']);
+    Route::get('/regencies/{id_province}', [LocationController::class, 'get_regencies']);
+    Route::get('/districts', [LocationController::class, 'get_districts']);
+    Route::get('/districts/{id_regency}', [LocationController::class, 'get_districts']);
+    Route::get('/villages', [LocationController::class, 'get_villages']);
+    Route::get('/villages/{id_district}', [LocationController::class, 'get_villages']);
 });
 
 Route::post('/reports/datatable', [ReportsController::class, 'datatable'])->name('api.report.datatable');
