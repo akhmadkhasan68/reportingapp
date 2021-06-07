@@ -29,6 +29,11 @@ Route::group(['middleware' => 'auth:api'], function(){
     ]);
 
     Route::get('/total_report/{status}', [ApiReports::class, 'count_reports']);
+    Route::post('/vote/{id_report}', [ApiReports::class, 'vote']);
+    Route::delete('/vote/{id_report}', [ApiReports::class, 'unvote']);
+
+    Route::get('/user_report/{id_user}', [ApiReports::class, 'user_report']);
+    Route::get('/user_report/{id_user}/{id_report}', [ApiReports::class, 'user_report_detail']);
 
     Route::get('/provinces', [LocationController::class, 'get_provinces']);
     Route::get('/regencies', [LocationController::class, 'get_regencies']);

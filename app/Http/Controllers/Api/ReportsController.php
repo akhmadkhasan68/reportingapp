@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Report;
 use App\Models\ReportImage;
+use App\Models\ReportVote;
 use Exception;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
@@ -237,5 +238,77 @@ class ReportsController extends Controller
         ];
 
         return response()->json($data, 200);
+    }
+
+    public function vote(Request $request, $id_report)
+    {
+        $user_id = Auth::guard('api')->user()->id;
+        $report_id = $id_report;
+
+        $cek = ReportVote::where('user_id', $user_id)->where('report_id', $report_id)->first();
+        if(!empty($cek))
+        {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vote sudah ada'
+            ]);
+        }
+
+        ReportVote::create([
+            'user_id' => $user_id,
+            'report_id' => $report_id,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Success add vote'
+        ], 200);
+    }
+
+    public function unvote($id_report)
+    {
+        $user_id = Auth::guard('api')->user()->id;
+        $report_id = $id_report;
+
+        $cek = ReportVote::where('user_id', $user_id)->where('report_id', $report_id)->first();
+        if(empty($cek))
+        {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vote tidak ada'
+            ]);
+        }
+
+        $delete = $cek->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Success delete vote'
+        ], 200);
+    }
+
+    public function user_report($id_user)
+    {
+        $reports = Report::with('votes', 'votes.user', 'images', 'province', 'regency', 'district', 'village')->where('user_id', $id_user)->get();
+        return response()->json([
+            'success' => true,
+            'data' => $reports
+        ], 200);
+    }
+
+    public function user_report_detail($id_user, $id_report)
+    {
+        try {
+            $reports = Report::with('votes', 'votes.user', 'images', 'province', 'regency', 'district', 'village')->where('user_id', $id_user)->findOrFail($id_report);
+            return response()->json([
+                'success' => true,
+                'data' => $reports
+            ], 200);
+        } catch (Exception $ex) {
+            return response()->json([
+                'success' => false,
+                'message' => $ex->getMessage()
+            ], 404);
+        }   
     }
 }
